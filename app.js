@@ -4,27 +4,38 @@ const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 
-const productRoutes = require("./api/routes/products");
-const orderRoutes = require("./api/routes/orders");
-const userRoutes = require('./api/routes/user');
+/**
+ * Here we create our routes
+ */
+const serviceRoutes = require("./api/routes/services");
+const testCommentRoutes = require("./api/routes/testComment");
 
+
+/* Configuration file, for password and such */
 require('dotenv').config();
 
+/* Connecting to MongoDB with user + pass */
 mongoose.connect(
-  "mongodb://wamclient:" +
+  "mongodb://wamhouse:" +
     process.env.MONGO_WAM_PWD +
-    "@debuck.info:27017/wearemusicosdb", 
+    "@127.0.0.1:27017/wamapi", 
   {
     useMongoClient: true
   }
 );
 mongoose.Promise = global.Promise;
 
+/* Logging tool à la Apache Logs */
 app.use(morgan("dev"));
+
+/* Static-files route */
 app.use('/uploads', express.static('uploads'));
+/* Will parse header HTTP Requests */
 app.use(bodyParser.urlencoded({ extended: false }));
+/* Will parse JSON requests */
 app.use(bodyParser.json());
 
+/* Headers sent to clients */
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header(
@@ -38,12 +49,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// Routes which should handle requests
-app.use("/products", productRoutes);
-app.use("/orders", orderRoutes);
-app.use("/user", userRoutes);
+/* Defining URLs for our routes */
+app.use("/services", serviceRoutes);
+app.use("/test_comment", testCommentRoutes);
 
-app.use((req, res, next) => {
+app.use((req, res, next) => { 
   const error = new Error("Not found");
   error.status = 404;
   next(error);
@@ -51,7 +61,7 @@ app.use((req, res, next) => {
 
 app.use((error, req, res, next) => {
   res.status(error.status || 500);
-  res.json({
+  res.json({ 
     error: {
       message: error.message
     }

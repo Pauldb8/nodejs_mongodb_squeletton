@@ -1,22 +1,27 @@
 const mongoose = require("mongoose");
-const Product = require("../models/product");
+const Service = require("../models/service");
 
-exports.products_get_all = (req, res, next) => {
-  Product.find()
-    .select("name price _id productImage")
+exports.services_get_all = (req, res, next) => {
+  Service.find()
+    .select("title description price image lat lng rating category _id")
     .exec()
     .then(docs => {
       const response = {
         count: docs.length,
-        products: docs.map(doc => {
+        services: docs.map(doc => {
           return {
-            name: doc.name,
+            title: doc.title,
+            description: doc.description,
             price: doc.price,
-            productImage: doc.productImage,
+            image: doc.image,
+            lat: doc.lat, 
+            lnt: doc.lng,
+            rating: doc.rating,
+            category: doc.category,
             _id: doc._id,
             request: {
               type: "GET",
-              url: "http://localhost:3000/products/" + doc._id
+              url: "http://localhost:3000/services/" + doc._id
             }
           };
         })
@@ -37,26 +42,38 @@ exports.products_get_all = (req, res, next) => {
     });
 };
 
-exports.products_create_product = (req, res, next) => {
-  const product = new Product({
+exports.services_create_service = (req, res, next) => {
+  console.log(req.body);
+  const service = new Service({
     _id: new mongoose.Types.ObjectId(),
-    name: req.body.name,
+    title: req.body.title,
+    description: req.body.description,
     price: req.body.price,
-    productImage: req.file.path
+    image: req.file.path,
+    lat: req.body.lat,
+    lnt: req.body.lng,
+    rating: req.body.rating,
+    category: req.body.category,
   });
-  product
+  service
     .save()
     .then(result => {
       console.log(result);
       res.status(201).json({
-        message: "Created product successfully",
-        createdProduct: {
-          name: result.name,
-          price: result.price,
+        message: "Created service successfully",
+        createdService: {
           _id: result._id,
+          title: result.title,
+          description: result.description,
+          price: result.price,
+          image: result.image,
+          lat: result.lat,
+          lnt: result.lng,
+          rating: result.rating,
+          category: result.category,
           request: {
             type: "GET",
-            url: "http://localhost:3000/products/" + result._id
+            url: "http://localhost:3000/services/" + result._id
           }
         }
       });
@@ -69,7 +86,7 @@ exports.products_create_product = (req, res, next) => {
     });
 };
 
-exports.products_get_product = (req, res, next) => {
+exports.services_get_service = (req, res, next) => {
   const id = req.params.productId;
   Product.findById(id)
     .select("name price _id productImage")
@@ -96,7 +113,7 @@ exports.products_get_product = (req, res, next) => {
     });
 };
 
-exports.products_update_product = (req, res, next) => {
+exports.services_update_service = (req, res, next) => {
   const id = req.params.productId;
   const updateOps = {};
   for (const ops of req.body) {
@@ -121,7 +138,7 @@ exports.products_update_product = (req, res, next) => {
     });
 };
 
-exports.products_delete = (req, res, next) => {
+exports.services_delete = (req, res, next) => {
   const id = req.params.productId;
   Product.remove({ _id: id })
     .exec()
@@ -130,7 +147,7 @@ exports.products_delete = (req, res, next) => {
         message: "Product deleted",
         request: {
           type: "POST",
-          url: "http://localhost:3000/products",
+          url: "http://localhost:3000/services",
           body: { name: "String", price: "Number" }
         }
       });
